@@ -244,15 +244,15 @@ int haier_device_send_heartbeat(haier_device_t *dev, uint32_t serial)
 }
 int haier_device_set_switch(haier_device_t *dev, Haier_stat_t *stat, int on)
 {
-	return __haier_device_send(dev, stat, haier_cmd_prepare_set_switch, (void *)on);
+	return __haier_device_send(dev, stat, haier_cmd_prepare_set_switch, (void *)(long)on);
 }
 int haier_device_set_temperature(haier_device_t *dev, Haier_stat_t *stat, uint32_t temp)
 {
-	return __haier_device_send(dev, stat, haier_cmd_prepare_set_temp, (void *)temp);
+	return __haier_device_send(dev, stat, haier_cmd_prepare_set_temp, (void *)(unsigned long)temp);
 }
 int haier_device_set_mode(haier_device_t *dev, Haier_stat_t *stat, int reserve)
 {
-	return __haier_device_send(dev, stat, haier_cmd_prepare_set_mode, (void *)reserve);
+	return __haier_device_send(dev, stat, haier_cmd_prepare_set_mode, (void *)(long)reserve);
 }
 /**********************************************/
 static

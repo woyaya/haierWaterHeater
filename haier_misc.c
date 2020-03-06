@@ -51,6 +51,27 @@ void haier_stat_n2h(Haier_stat_t *stat)
 }
 
 /*********************************************/
+void haier_mac_format(char *mac)
+{
+	int i = 0;
+	int offset = 0;
+	assert(NULL != mac);
+	while('\0' != mac[i])
+	{
+		if ((mac[i] >= 'a') && (mac[i] <= 'z'))
+			mac[offset++] = mac[i] - ('a' - 'A');
+		else if (((mac[i] >= '0') && (mac[i] <= '9')) || ((mac[i] >= 'A') && (mac[i] <= 'Z')))
+			mac[offset++] = mac[i];
+		else{
+			//skip invalid data
+		}
+		i++;
+	}
+	mac[offset] = '\0';
+	
+	return;
+}
+/*********************************************/
 uint8_t haier_checksum_calculate(const uint8_t *buffer, int len)
 {
 	int i;

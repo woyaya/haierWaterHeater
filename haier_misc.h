@@ -12,6 +12,7 @@ void haier_cmd_n2h(Haier_cmd_t *cmd);
 void haier_stat_n2h(Haier_stat_t *stat);
 
 /*********************************************/
+void haier_mac_format(char *mac);
 uint8_t haier_checksum_calculate(const uint8_t *buffer, int len);
 /*********************************************/
 void haier_print_discover_resp(const haier_discover_resp_t *resp);

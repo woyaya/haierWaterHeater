@@ -158,6 +158,7 @@ int __param_parse(int argc, char * const argv[])
 				ip = optarg;
 			break;
 			case 'm':
+				haier_mac_format(optarg);
 				mac = optarg;
 			break;
 			case 's':
@@ -232,7 +233,6 @@ __error:
 int main(int argc, char *argv[])
 {
 	int ret;
-	
 	if (__param_parse(argc, argv))
 		return -1;
 	ret = haier_discover_init();

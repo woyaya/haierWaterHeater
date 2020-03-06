@@ -100,7 +100,7 @@ int haier_cmd_check(const Haier_cmd_t *cmd)
 	uint8_t checksum = haier_checksum_calculate((uint8_t*)cmd, cmd->length);
 	if (cmd->length <= sizeof(*cmd))
 	{
-		ERR("Invalid command size: %d <= %d", cmd->length, sizeof(*cmd));
+		ERR("Invalid command size: %d <= %d", cmd->length, (int)sizeof(*cmd));
 		return EINVAL;
 	}
 	data = cmd->data[cmd->length - sizeof(*cmd)];
@@ -302,7 +302,7 @@ int _haier_cmd_prepare_control(haier_device_t *dev, void *buffer, int *size, uin
 }
 int haier_cmd_prepare_set_temp(haier_device_t *dev, void *buffer, int *size, void *param)
 {
-	uint32_t temperature = (uint32_t)param;
+	uint32_t temperature = (uint32_t)(unsigned long)param;
 	if ((temperature < HAIER_TEMPERATURE_MIN) || (temperature > HAIER_TEMPERATURE_MAX))
 	{
 		ERR("Dist temperature out of range[%d,%d]: %d", 
@@ -313,11 +313,11 @@ int haier_cmd_prepare_set_temp(haier_device_t *dev, void *buffer, int *size, voi
 }
 int haier_cmd_prepare_set_mode(haier_device_t *dev, void *buffer, int *size, void *param)
 {
-	int data = ((uint32_t)param) ? 1 : 0;
+	int data = ((uint32_t)(long)param) ? 1 : 0;
 	return _haier_cmd_prepare_control(dev, buffer, size, HAIER_RESERVE, data);
 }
 int haier_cmd_prepare_set_switch(haier_device_t *dev, void *buffer, int *size, void *param)
 {
-	int data = ((uint32_t)param) ? 1 : 0;
+	int data = ((uint32_t)(long)param) ? 1 : 0;
 	return _haier_cmd_prepare_control(dev, buffer, size, HAIER_SWITCH, data);
 }

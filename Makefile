@@ -3,7 +3,8 @@
 PLATFORM := UBUNTU
 #PLATFORM := OPENWRT
 ####
-EXEC := haier				#Final executable name
+#Final executable name
+EXEC := haier
 #Compiler with debug info or not
 #DEBUG := 1
 #Source code of openwrt firmware
@@ -46,3 +47,9 @@ endif
 
 clean:
 	rm -rf $(OBJS) $(EXEC)
+
+distclean: clean
+	rm -rf $(EXEC).*.tgz
+
+tar backup:
+	tar zcf $(EXEC).`date +%Y%m%d`.tgz *.c *.h *.sh Makefile
