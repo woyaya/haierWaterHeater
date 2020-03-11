@@ -174,6 +174,7 @@ int haier_stat2json(const Haier_stat_t *stat, char *buf, int size)
 		ret = snprintf(buf, size,
 			"{"
 			"\n\t\"Switch\":\"%s\","
+			"\n\t\"Reserve\":\"on\","
 			"\n\t\"Power\":%d,"
 			"\n\t\"Stat\":\"%s\","
 			"\n\t\"Dynamic\":\"%s\","
@@ -205,6 +206,7 @@ int haier_stat2json(const Haier_stat_t *stat, char *buf, int size)
 		ret = snprintf(buf, size,
 			"{"
 			"\n\t\"Switch\":\"%s\","
+			"\n\t\"Reserve\":\"off\","
 			"\n\t\"Power\":%d,"
 			"\n\t\"Stat\":\"%s\","
 			"\n\t\"Dynamic\":\"%s\","

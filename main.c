@@ -58,7 +58,7 @@ static
 void haier_print_stat(const Haier_stat_t *stat)
 {
 	int ret;
-	char buf[256];
+	char buf[512];
 	ret = haier_stat2json(stat, buf, sizeof(buf));
 	if (ret > 0)
 	{

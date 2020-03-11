@@ -13,6 +13,7 @@ USAGE(){
 	echo "Usage:"
 	echo "$1 -T temperature -l -m device_MAC"
 	echo "	-s on/off: on: turn on; off: turn off"
+	echo "	-r on/off: on: reserve mode; off: direct mode"
 	echo "	-T temperature: 0: power off; [35,75]: temperature"
 	echo "	-l count: loop for 'count' times if fail, '0': loop forever. defalut: 0."
 	echo "	-m device_MAC: water heater mac address"
@@ -22,8 +23,8 @@ LOG_RESIZE(){
 	mv $log.tmp $log
 }
 LOG(){
-	logger -s "$$: $@"
 	echo "$$: $@" >>$log
+	logger -s "$$: $@"
 }
 ERR(){
 	LOG "$@"
@@ -42,12 +43,16 @@ LOG "`date`"
 
 temperature=""
 switch=""
+reserve=""
 
 loop=10
-while getopts ":T:l:m:s:" opt; do
+while getopts ":T:l:m:s:r:" opt; do
 	case $opt in
 		s)
 			switch=$OPTARG
+		;;
+		r)
+			reserve=$OPTARG
 		;;
 		T)
 			temperature=$OPTARG
@@ -69,15 +74,16 @@ while getopts ":T:l:m:s:" opt; do
 	esac
 done
 
-if [ -z "$temperature" -a -z "$switch" ] || [ -z "$mac" ]
+if [ -z "$temperature" -a -z "$switch" -a -z "$reserve" ] || [ -z "$mac" ]
 then
 	USAGE $0
 	exit 1
 fi
 [ "$temperature" = "0" ] && switch="off"
-[ "$switch" = "off" ] && temperature=""
-[ -n "$temperature" ] && switch="on"
-LOG "Local ifname:$IFNAME, device mac:$mac, dist switch: $switch, dist temperature:$temperature, loop:$loop"
+[ "$switch" = "off" ] && temperature="" && reserve=""
+[ -n "$reserve" ] && temperature="" && switch="on"
+[ -n "$temperature" ] && reserve="off" && switch="on"
+LOG "Local ifname:$IFNAME, device mac:$mac, dist switch: $switch, dist temperature:$temperature, reserve:$reserve, loop:$loop"
 
 GET_RESULT(){
 	echo "$STAT" | sed "/$1:/!d;s/.*://"
@@ -123,8 +129,9 @@ EXECUTE_CMD(){
 retry=$loop
 UPDATE_STAT
 while true;do
-	SWITCH=`GET_RESULT Switch`
 	[ -n "$switch" ] && {
+		SWITCH=`GET_RESULT Switch`
+		LOG "Change switch from '$SWITCH' to '$switch'"
 		[ "$SWITCH" != "$switch" ] && {
 			case $switch in
 				off)
@@ -140,9 +147,25 @@ while true;do
 		}
 		PARAM="Switch $switch"
 	}
+	[ -n "$reserve" ] && {
+		RESERVE=`GET_RESULT Reserve`
+		LOG "Change reserve from '$RESERVE' to '$reserve'"
+		[ "$RESERVE" != "$reserve" ] && {
+			case $reserve in
+				off)
+					EXECUTE_CMD -r 0
+				;;
+				on)
+					EXECUTE_CMD -r 1
+				;;
+				*)
+					ERR "Unsupported param: \"$reserve\""
+				;;
+			esac
+		}
+		PARAM="Reserve $reserve"
+	}
 	[ -n "$temperature" ] && {
-		RESERVE=`GET_RESULT Reserve[12]`
-		[ -n "$RESERVE" ] && EXECUTE_CMD -r 0
 		TEMPERATURE=`GET_RESULT DistTemperature`
 		LOG "Change temperature from '$TEMPERATURE' to '$temperature'"
 		[ $TEMPERATURE = $temperature ] && break
@@ -156,6 +179,6 @@ while true;do
 	[ $retry != 0 ] && retry=`expr $retry "-" 1`
 done
 
-LOG "Success: $@"
+LOG "Success"
 LOG_RESIZE
 #rm -rf $log
