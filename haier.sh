@@ -1,6 +1,5 @@
 #!/bin/sh
 NAME=haier
-IFNAME=`ls /sys/class/net | head -n 1`
 MAIL_ADDRESS="4523468@qq.com"
 MAIL_TITLE="Haier waterheater setting"
 
@@ -12,6 +11,7 @@ DIR=`which $NAME`
 USAGE(){
 	echo "Usage:"
 	echo "$1 -T temperature -l -m device_MAC"
+	echo "	-I ifname"
 	echo "	-s on/off: on: turn on; off: turn off"
 	echo "	-r on/off: on: reserve mode; off: direct mode"
 	echo "	-T temperature: 0: power off; [35,75]: temperature"
@@ -46,8 +46,11 @@ switch=""
 reserve=""
 
 loop=10
-while getopts ":T:l:m:s:r:" opt; do
+while getopts ":I:T:l:m:s:r:" opt; do
 	case $opt in
+		I)
+			IFNAME=$OPTARG
+		;;
 		s)
 			switch=$OPTARG
 		;;
@@ -79,10 +82,16 @@ then
 	USAGE $0
 	exit 1
 fi
+#Check params
 [ "$temperature" = "0" ] && switch="off"
 [ "$switch" = "off" ] && temperature="" && reserve=""
 [ -n "$reserve" ] && temperature="" && switch="on"
 [ -n "$temperature" ] && reserve="off" && switch="on"
+[ -z "$IFNAME" ] && {
+	IFNAME=`ip route show default scope global | sed 's/.* dev //;s/ .*//'`
+	[ -z "$IFNAME" ] && IFNAME=`ls /sys/class/net | head -n 1`
+	[ -z "$IFNAME" ] && ERR="No default interface find"
+}
 LOG "Local ifname:$IFNAME, device mac:$mac, dist switch: $switch, dist temperature:$temperature, reserve:$reserve, loop:$loop"
 
 GET_RESULT(){
