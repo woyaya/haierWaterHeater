@@ -245,6 +245,11 @@ int main(int argc, char *argv[])
 	if (NULL == ip)
 	{//no IP, search first
 		ret = haier_discover(ifname, mac, wait);
+	}else
+	{
+		if (NULL == mac)
+			goto __end;
+		haier_device_add(ip, mac);
 	}
 	if (NULL == mac)
 		goto __end;

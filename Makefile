@@ -10,7 +10,8 @@ EXEC := haier
 #Source code of openwrt firmware
 OPENWRT_SRC_DIR := ./WRT1200
 ifeq ($(PLATFORM),UBUNTU)
-  DEFAULT_IFNAME := enp2s1
+#  DEFAULT_IFNAME := enp2s1
+  DEFAULT_IFNAME := eth0
 endif
 ifeq ($(PLATFORM),OPENWRT)
   DEFAULT_IFNAME := br-lan

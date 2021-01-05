@@ -12,6 +12,7 @@ USAGE(){
 	echo "Usage:"
 	echo "$1 -T temperature -l -m device_MAC"
 	echo "	-I ifname"
+	echo "  -i ip"
 	echo "	-s on/off: on: turn on; off: turn off"
 	echo "	-r on/off: on: reserve mode; off: direct mode"
 	echo "	-T temperature: 0: power off; [35,75]: temperature"
@@ -44,9 +45,10 @@ LOG "`date`"
 temperature=""
 switch=""
 reserve=""
+ip=""
 
 loop=10
-while getopts ":I:T:l:m:s:r:" opt; do
+while getopts ":I:T:l:i:m:s:r:" opt; do
 	case $opt in
 		I)
 			IFNAME=$OPTARG
@@ -65,6 +67,9 @@ while getopts ":I:T:l:m:s:r:" opt; do
 		;;
 		m)
 			mac=$OPTARG
+		;;
+		i)
+			ip=$OPTARG
 		;;
 		\?)
 			USAGE $0
@@ -92,7 +97,9 @@ fi
 	[ -z "$IFNAME" ] && IFNAME=`ls /sys/class/net | head -n 1`
 	[ -z "$IFNAME" ] && ERR="No default interface find"
 }
-LOG "Local ifname:$IFNAME, device mac:$mac, dist switch: $switch, dist temperature:$temperature, reserve:$reserve, loop:$loop"
+IP=""
+[ -n "$ip" ] && IP=" -i $ip"
+LOG "Local ifname:$IFNAME, device mac:$mac, dist switch: $switch, dist temperature:$temperature, reserve:$reserve, loop:$loop, device IP:$ip"
 
 GET_RESULT(){
 	echo "$STAT" | sed "/$1:/!d;s/.*://"
@@ -113,7 +120,7 @@ RETRY(){
 UPDATE_STAT(){
 	local retry=$loop
 	while true;do
-		STAT=`$EXEC -j -I $IFNAME -m $mac -g 1 -s 2 2>>/dev/null | sed '/^\t"/!d;s/[\t",]//g'`
+		STAT=`$EXEC $IP -j -I $IFNAME -m $mac -g 1 -s 2 2>>/dev/null | sed '/^\t"/!d;s/[\t",]//g'`
 		[ -n "$STAT" ] && break;
 		RETRY $retry "Get stat"
 		[ $retry != 0 ] && retry=`expr $retry "-" 1`
@@ -122,9 +129,9 @@ UPDATE_STAT(){
 EXECUTE_CMD(){
 	local result
 	local retry=$loop
-	LOG "$retry: $EXEC -j -I $IFNAME -m $mac $@"
+	LOG "$retry: $EXEC $IP -j -I $IFNAME -m $mac $@"
 	while true;do
-		result=`$EXEC -j -I $IFNAME -m $mac $@ | sed '/^\t"/!d;s/[\t",]//g'`
+		result=`$EXEC $IP -j -I $IFNAME -m $mac $@ | sed '/^\t"/!d;s/[\t",]//g'`
 		[ $? = 0 ] && {
 			[ -n "$result" ] && STAT="$result"
 			break;
