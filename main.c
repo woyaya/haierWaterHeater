@@ -127,7 +127,7 @@ void usage(const char *name)
 		"%s [OPTs] [MAC_address]\n"
 		"\t-I <ifname>: search devices on network interface\n"
 		"\t-i <ip>: IP address of device\n"
-		"\t-m <mac>: Mac address\n"
+		"\t-m <mac>: Mac address. If not specified, search all device in the LAN\n"
 		"\t-s <second>: search device and wait. 0: wait forever. Default: 1\n"
 		"\t-g <count>: get water heater stat 'count' times. 0: endless get\n"
 		"\t-T <temperature>: set dist temperature. valid range: [%d:%d]\n"
@@ -232,7 +232,7 @@ __error:
 
 int main(int argc, char *argv[])
 {
-	int ret;
+	int ret = 0;
 	if (__param_parse(argc, argv))
 		return -1;
 	ret = haier_discover_init();
@@ -248,7 +248,11 @@ int main(int argc, char *argv[])
 	}else
 	{
 		if (NULL == mac)
+		{
+			ERR("Missing device mac");
+			ret = EINVAL;
 			goto __end;
+		}
 		haier_device_add(ip, mac);
 	}
 	if (NULL == mac)
@@ -295,5 +299,5 @@ int main(int argc, char *argv[])
 
 __end:
 	haier_discover_uninit();
-	return 0;
+	return ret;
 }	
