@@ -54,3 +54,7 @@ distclean: clean
 
 tar backup:
 	tar zcf $(EXEC).`date +%Y%m%d`.tgz *.c *.h *.sh Makefile
+
+install:
+	cp -ruf $(EXEC) /usr/bin/
+	cp -ruf $(EXEC).sh /usr/bin/
